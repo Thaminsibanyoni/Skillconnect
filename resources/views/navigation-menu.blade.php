@@ -20,6 +20,31 @@
                     <x-nav-link href="{{ route('providers.index') }}" :active="request()->routeIs('providers.index')">
                         {{ __('Browse Providers') }}
                     </x-nav-link>
+
+                    {{-- Provider My Orders Link --}}
+                    @auth
+                        @if(Auth::user()->role === 'provider')
+                            <x-nav-link href="{{ route('provider.orders.index') }}" :active="request()->routeIs('provider.orders.index')">
+                                {{ __('My Orders') }}
+                            </x-nav-link>
+                             <x-nav-link href="{{ route('provider.orders.available') }}" :active="request()->routeIs('provider.orders.available')">
+                                {{ __('Available Orders') }}
+                            </x-nav-link>
+                             <x-nav-link href="{{ route('provider.services.manage') }}" :active="request()->routeIs('provider.services.manage')">
+                                {{ __('My Services') }}
+                            </x-nav-link>
+                             <x-nav-link href="{{ route('provider.subscription.index') }}" :active="request()->routeIs('provider.subscription.index')">
+                                {{ __('Subscription') }}
+                            </x-nav-link>
+                            <x-nav-link href="{{ route('provider.wallet.index') }}" :active="request()->routeIs('provider.wallet.index')">
+                                {{ __('Wallet & Payouts') }}
+                            </x-nav-link>
+                        @elseif(Auth::user()->role === 'seeker')
+                            <x-nav-link href="{{ route('seeker.orders.index') }}" :active="request()->routeIs('seeker.orders.index')">
+                                {{ __('My Bookings') }}
+                            </x-nav-link>
+                        @endif
+                    @endauth
                 </div>
             </div>
 
@@ -91,6 +116,16 @@
                         @livewire('notifications-indicator')
                     </div>
                 @endauth
+
+                 {{-- Dark Mode Toggle --}}
+                <div class="ms-3 relative flex items-center">
+                    <button type="button" x-data="darkModeToggle" @click="toggle"
+                            class="p-2 rounded-full text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg x-show="!isDark" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /> </svg>
+                        <svg x-show="isDark" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"> <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /> </svg>
+                        <span class="sr-only">Toggle dark mode</span>
+                    </button>
+                </div>
 
                 <!-- Settings Dropdown -->
                 <div class="ms-3 relative">
@@ -168,6 +203,31 @@
             <x-responsive-nav-link href="{{ route('providers.index') }}" :active="request()->routeIs('providers.index')">
                 {{ __('Browse Providers') }}
             </x-responsive-nav-link>
+
+             {{-- Provider My Orders Responsive Link --}}
+             @auth
+                @if(Auth::user()->role === 'provider')
+                    <x-responsive-nav-link href="{{ route('provider.orders.index') }}" :active="request()->routeIs('provider.orders.index')">
+                        {{ __('My Orders') }}
+                    </x-responsive-nav-link>
+                     <x-responsive-nav-link href="{{ route('provider.orders.available') }}" :active="request()->routeIs('provider.orders.available')">
+                        {{ __('Available Orders') }}
+                    </x-responsive-nav-link>
+                     <x-responsive-nav-link href="{{ route('provider.services.manage') }}" :active="request()->routeIs('provider.services.manage')">
+                        {{ __('My Services') }}
+                    </x-responsive-nav-link>
+                     <x-responsive-nav-link href="{{ route('provider.subscription.index') }}" :active="request()->routeIs('provider.subscription.index')">
+                        {{ __('Subscription') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link href="{{ route('provider.wallet.index') }}" :active="request()->routeIs('provider.wallet.index')">
+                        {{ __('Wallet & Payouts') }}
+                    </x-responsive-nav-link>
+                @elseif(Auth::user()->role === 'seeker')
+                     <x-responsive-nav-link href="{{ route('seeker.orders.index') }}" :active="request()->routeIs('seeker.orders.index')">
+                        {{ __('My Bookings') }}
+                    </x-responsive-nav-link>
+                @endif
+            @endauth
         </div>
 
         <!-- Responsive Settings Options -->

@@ -107,7 +107,12 @@
                                     <button wire:click="suspendUser({{ $user->id }})" wire:loading.attr="disabled" class="text-red-600 hover:text-red-900">Suspend</button>
                                 @endif
                                 {{-- Add View/Edit buttons later --}}
-                                {{-- <a href="#" class="text-indigo-600 hover:text-indigo-900">View</a> --}}
+                                {{-- <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-2">View</a> --}}
+                                @if($user->role === 'provider')
+                                    <button wire:click="manageAreas({{ $user->id }})" class="text-purple-600 hover:text-purple-900">Areas</button>
+                                @endif
+                                {{-- Add Roles Button --}}
+                                <button wire:click="showRoleModal({{ $user->id }})" class="text-cyan-600 hover:text-cyan-900 ml-2">Roles</button>
                             </td>
                         </tr>
                     @empty
@@ -125,4 +130,85 @@
             {{ $users->links() }} {{-- Pagination links --}}
         </div>
     </div>
+
+    {{-- Service Areas Modal --}}
+    <x-dialog-modal wire:model.live="showAreasModal">
+        <x-slot name="title">
+            Manage Service Areas for {{ $editingUser?->name }}
+        </x-slot>
+
+        <x-slot name="content">
+            @if($editingUser)
+                <div class="text-sm text-gray-600 mb-4">Select the cities where this provider is approved to operate.</div>
+                <div class="max-h-96 overflow-y-auto space-y-4">
+                    @forelse ($allProvinces as $province)
+                        <div class="py-2">
+                             <h4 class="font-semibold text-gray-700 mb-1">{{ $province->name }}</h4>
+                             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 pl-4">
+                                @foreach($allCities->where('province_id', $province->id) as $city)
+                                    <label for="city_{{ $city->id }}" class="flex items-center">
+                                        <input id="city_{{ $city->id }}"
+                                               wire:model="assignedCityIds.{{ $city->id }}"
+                                               value="{{ $city->id }}"
+                                               type="checkbox"
+                                               class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                        <span class="ml-2 text-sm text-gray-600">{{ $city->name }}</span>
+                                    </label>
+                                @endforeach
+                             </div>
+                        </div>
+                    @empty
+                        <p class="text-gray-500">No provinces or cities found. Please add them via Geography Management.</p>
+                    @endforelse
+                </div>
+            @else
+                 <p>Loading user data...</p>
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeAreasModal()" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ms-3" wire:click="saveAreas()" wire:loading.attr="disabled">
+                {{ __('Save Areas') }}
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
+
+    {{-- Assign Roles Modal --}}
+    <x-dialog-modal wire:model.live="showRoleModal">
+        <x-slot name="title">
+            Manage Roles for {{ $editingUser?->name }}
+        </x-slot>
+
+        <x-slot name="content">
+             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                @forelse($allRoles as $role)
+                    <div class="flex items-center">
+                        <input id="role_{{ $role->id }}" type="checkbox"
+                               wire:model.defer="assignedRoles.{{ $role->id }}"
+                               value="{{ $role->name }}"
+                               class="rounded dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800">
+                        <label for="role_{{ $role->id }}" class="ml-2 text-sm text-gray-600 dark:text-gray-400">{{ $role->name }}</label>
+                    </div>
+                @empty
+                    <p class="text-gray-500 dark:text-gray-400 col-span-full">No roles defined yet.</p>
+                @endforelse
+            </div>
+             <x-input-error for="assignedRoles" class="mt-2" />
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeRoleModal()" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ms-3" wire:click="saveRoles()" wire:loading.attr="disabled">
+                {{ __('Save Roles') }}
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
+
 </div>

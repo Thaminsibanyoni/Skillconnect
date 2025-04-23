@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('order_id')->nullable()->constrained('orders')->onDelete('set null'); // Link to order if applicable
-            $table->enum('type', ['payment', 'payout', 'refund', 'commission', 'wallet_topup']);
+            $table->foreignId('order_id')->nullable()->constrained('orders')->onDelete('set null');
+            // Added 'earning' and 'subscription' types
+            $table->enum('type', ['payment', 'payout', 'refund', 'commission', 'wallet_topup', 'earning', 'subscription']);
             $table->decimal('amount', 10, 2);
             $table->enum('status', ['pending', 'completed', 'failed'])->default('pending');
             $table->string('payment_method')->nullable(); // e.g., 'card', 'paypal', 'wallet'

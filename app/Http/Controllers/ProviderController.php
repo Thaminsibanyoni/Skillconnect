@@ -56,10 +56,14 @@ class ProviderController extends Controller
         }
 
         // Eager load relationships needed for the profile (e.g., ratings received)
-        $provider->loadAvg('ratingsReceived', 'rating'); // Load average rating
-        $provider->loadCount('ratingsReceived'); // Load ratings count
-
-        // TODO: Load services offered by the provider later
+        $provider->loadAvg('ratingsReceived', 'rating');
+        $provider->loadCount('ratingsReceived');
+        $provider->load([
+            'services.serviceCategory',
+            'ratingsReceived' => function ($query) { // Load ratings with the user who gave them
+                $query->with('user')->latest()->limit(10); // Load latest 10 reviews with seeker info
+            }
+        ]);
 
         return view('providers.show', compact('provider'));
     }

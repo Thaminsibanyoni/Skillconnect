@@ -4,8 +4,9 @@ namespace App\Livewire\Admin;
 
 use App\Models\User;
 use App\Models\Order;
-use App\Models\Rating; // Import Rating model
+use App\Models\Rating;
 use App\Models\ServiceCategory;
+use Illuminate\Support\Facades\DB; // Import DB facade
 use Livewire\Component;
 
 class Dashboard extends Component
@@ -43,9 +44,30 @@ class Dashboard extends Component
             $data['pendingProviders'] = User::where('role', 'provider')->where('status', 'pending')->count();
             // Placeholder for platform revenue (sum of completed order amounts)
             $data['platformRevenue'] = Order::where('status', 'completed')->sum('total_amount');
-            $data['activeCategories'] = ServiceCategory::count(); // Assuming all categories in DB are active for now
-            $data['latestUsers'] = User::latest()->take(5)->get(); // Fetch latest 5 users
-            // Add more 'all' stats later
+            $data['activeCategories'] = ServiceCategory::count();
+            $data['latestUsers'] = User::latest()->take(5)->get();
+
+            // Data for Users by Role Pie Chart
+            $data['userRoleCounts'] = [
+                 'labels' => ['Seekers', 'Providers'],
+                 'data' => [$totalSeekers, $totalProviders],
+             ];
+
+            // Data for Orders by Status Chart
+            $orderStatusCounts = Order::query()
+                ->select('status', DB::raw('count(*) as count'))
+                ->groupBy('status')
+                ->pluck('count', 'status')
+                ->all();
+
+            // Prepare data in a format Chart.js can easily use
+            $statuses = ['pending', 'accepted', 'in_progress', 'completed', 'cancelled', 'rejected']; // Ensure consistent order
+            $data['orderStatusChart'] = [
+                'labels' => collect($statuses)->map(fn($status) => ucfirst(str_replace('_', ' ', $status)))->toArray(),
+                'data' => collect($statuses)->map(fn($status) => $orderStatusCounts[$status] ?? 0)->toArray(),
+            ];
+
+            // Add more 'all' stats/chart data later
         } elseif ($this->viewMode === 'seeker') {
             $data['totalServiceRequests'] = Order::count();
             // Calculate average rating given by seekers
@@ -53,9 +75,15 @@ class Dashboard extends Component
             // Add more 'seeker' stats later
         } elseif ($this->viewMode === 'provider') {
             $data['pendingProviders'] = User::where('role', 'provider')->where('status', 'pending')->count();
-            $data['onlineProviders'] = User::where('role', 'provider')->where('is_online', true)->count(); // Use is_online column
+            $data['onlineProviders'] = User::where('role', 'provider')->where('is_online', true)->count();
             // Calculate average rating received by providers
             $data['avgProviderRatingReceived'] = Rating::avg('rating'); // Simplified: Average of ALL ratings for now
+
+            // Placeholder data for Provider Earnings Chart (e.g., last 7 days)
+            $data['providerEarningsChart'] = [
+                'labels' => ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'], // Replace with actual dates
+                'data' => [150, 200, 180, 220, 170, 210, 250], // Replace with actual earnings data query
+            ];
             // Add more 'provider' stats later
         }
 

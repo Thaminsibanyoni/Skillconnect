@@ -81,6 +81,15 @@
                 @endif
             @endif
         </div>
+
+        {{-- Bio (Only for Providers) --}}
+        @if (auth()->user()->role === 'provider')
+            <div class="col-span-6 sm:col-span-4">
+                <x-label for="bio" value="{{ __('About / Bio') }}" />
+                <textarea id="bio" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm" wire:model="state.bio" rows="5" autocomplete="off"></textarea>
+                <x-input-error for="bio" class="mt-2" />
+            </div>
+        @endif
     </x-slot>
 
     <x-slot name="actions">

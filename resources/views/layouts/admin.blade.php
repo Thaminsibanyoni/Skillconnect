@@ -20,7 +20,7 @@
     <body class="font-sans antialiased">
         <x-banner />
 
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen bg-gray-100 dark:bg-gray-900"> {{-- Added dark mode background --}}
             {{-- Consider creating a dedicated admin navigation component --}}
             @livewire('navigation-menu')
 
@@ -38,9 +38,11 @@
                 {{-- Admin specific content --}}
                 <div class="py-12">
                     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                        <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
+                        {{-- Removed default white background from slot container --}}
+                        {{-- Let the inner component handle its background --}}
+                        {{-- <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-xl sm:rounded-lg"> --}}
                            {{ $slot }}
-                        </div>
+                        {{-- </div> --}}
                     </div>
                 </div>
             </main>

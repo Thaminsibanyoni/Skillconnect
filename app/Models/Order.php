@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\City; // Import City model
+use Illuminate\Database\Eloquent\Factories\HasFactory; // Keep only one
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -26,9 +27,10 @@ class Order extends Model
         'address',
         'latitude',
         'longitude',
+        'city_id', // Added city relation
         'total_amount',
-        'commission_rate',   // Added
-        'commission_amount', // Added
+        'commission_rate',
+        'commission_amount',
     ];
 
     /**
@@ -85,5 +87,13 @@ class Order extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Get the city associated with the order.
+     */
+    public function city(): BelongsTo
+    {
+        return $this->belongsTo(City::class);
     }
 }

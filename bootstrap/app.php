@@ -18,8 +18,17 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->alias([ // Added alias registration
+        $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'auth.provider' => \App\Http\Middleware\EnsureUserIsProvider::class, // Added provider auth alias
+        ]);
+
+        // Add CSRF exceptions here
+        $middleware->validateCsrfTokens(except: [
+            'payment/payfast/notify', // Exclude PayFast ITN route
+            'payment/flutterwave/webhook', // Exclude Flutterwave webhook route
+            // Add other webhook routes here later (e.g., Stripe)
+            // 'stripe/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

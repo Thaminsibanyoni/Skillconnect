@@ -46,19 +46,70 @@ class OrderObserver
 
     /**
      * Handle the Order "created" event.
-     * Notify the provider if assigned.
+     * Notify the assigned provider or find available providers.
      */
     public function created(Order $order): void
     {
-        // Check if a provider is assigned immediately upon creation
         if ($order->provider_id && $order->provider) {
-            // Delay notification slightly to ensure transaction commits? Or use ShouldQueue on Notification
+            // Direct assignment: Notify the specific provider
+            Log::info("Notifying assigned provider {$order->provider_id} for order #{$order->id}");
             $order->provider->notify(new \App\Notifications\NewOrderNotification($order));
+        } elseif (!$order->provider_id) {
+            // Unassigned order: Find and notify nearby available providers
+            Log::info("Order #{$order->id} created without provider. Finding suitable providers...");
+            // Dispatch the job to handle finding and notifying providers asynchronously
+             \App\Jobs\FindAndNotifyProviders::dispatch($order->withoutRelations()); // Pass order without relations
         }
-        // TODO: Add logic here or elsewhere to notify nearby available providers
-        // if no provider is assigned initially. This might involve querying providers
-        // based on location/service and broadcasting to the 'providers' channel or individually.
     }
+
+    // Removed the findAndNotifyProviders method from here as it's now in the Job
+
+    /**
+     * Handle the Order "updated" event.
+    //     $orderLat = $order->latitude;
+    //     $orderLng = $order->longitude;
+
+    //     if (!$serviceId || is_null($orderLat) || is_null($orderLng)) {
+    //         Log::error("Cannot find providers for order #{$order->id}: Missing service ID or location.");
+    //         return;
+    //     }
+
+    //     // 3. Query potential providers:
+    //     //    - Have the 'provider' role
+    //     //    - Are 'approved'
+    //     //    - Are 'is_online'
+    //     //    - Offer the required service (check service_user pivot table)
+    //     //    - Are within a certain radius of the order location (requires geo-query)
+    //     $radius = 10; // Example: 10 km radius
+    //     $providers = \App\Models\User::query()
+    //         ->where('role', 'provider')
+    //         ->where('status', 'approved')
+    //         ->where('is_online', true)
+    //         ->whereHas('services', fn($q) => $q->where('services.id', $serviceId))
+    //         // Basic Bounding Box location query (replace with proper spatial query later)
+    //         ->whereBetween('latitude', [$orderLat - ($radius / 111), $orderLat + ($radius / 111)]) // Approx conversion
+    //         ->whereBetween('longitude', [
+    //             $orderLng - ($radius / (111 * cos(deg2rad($orderLat)))),
+    //             $orderLng + ($radius / (111 * cos(deg2rad($orderLat))))
+    //         ])
+    //         ->limit(10) // Limit the number of providers notified initially
+    //         ->get();
+
+    //     Log::info("Found " . $providers->count() . " potential providers for order #{$order->id}");
+
+        // 4. Notify each found provider
+        if ($providers->isNotEmpty()) {
+            // Use Laravel's Notification facade to send to multiple users
+            \Illuminate\Support\Facades\Notification::send($providers, new \App\Notifications\OrderAvailableNotification($order));
+            Log::info("Sent OrderAvailableNotification for order #{$order->id} to " . $providers->count() . " providers.");
+        } else {
+            // Handle case where no providers are found (e.g., notify admin, queue order, set order status to 'no_providers')
+            Log::warning("No suitable providers found for order #{$order->id}.");
+            // Optionally update order status
+            // $order->status = 'no_providers_available';
+            // $order->saveQuietly(); // Avoid triggering observer again
+        // } // End of removed method
+    // } // End of removed method
 
     /**
      * Handle the Order "updated" event.

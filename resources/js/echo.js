@@ -28,8 +28,10 @@ if (userId) {
     window.Echo.private(`App.Models.User.${userId}`)
         .notification((notification) => {
             console.log('Notification Received:', notification);
-            // Example: Show a simple alert (replace with a proper toast notification system)
-            // alert(`New Notification: ${notification.message}`);
+            // Show Toastr notification
+            // Use data from the broadcast message (defined in toBroadcast method)
+            const message = notification.message || 'You have a new notification.';
+            window.toastr.info(message); // Use 'info', 'success', 'warning', or 'error'
 
             // Optionally, trigger Livewire component refresh if needed,
             // although the #[On] attribute should handle the count update.

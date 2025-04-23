@@ -23,12 +23,17 @@
             <script>
                 window.userId = {{ auth()->id() }};
                 // Pass initial provider online status if needed for Echo join logic
-                // window.isProviderOnline = {{ auth()->user()->is_online ? 'true' : 'false' }};
+                window.isProviderInitiallyOnline = {{ (auth()->user()->role === 'provider' && auth()->user()->is_online) ? 'true' : 'false' }};
             </script>
         @endauth
 
         <!-- Styles -->
         @livewireStyles
+
+        {{-- Leaflet CSS --}}
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+              integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+              crossorigin=""/>
     </head>
     {{-- Apply dark class based on Alpine state --}}
     <body class="font-sans antialiased bg-gray-100 dark:bg-gray-900">
@@ -63,5 +68,121 @@
         @stack('modals')
 
         @livewireScripts
+
+        {{-- Chart.js Initialization --}}
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.data('userRoleChartData', (chartData) => ({
+                    chartData: chartData,
+                    chartInstance: null,
+                    renderChart() {
+                        if (this.chartInstance) {
+                            this.chartInstance.destroy();
+                        }
+                        const ctx = document.getElementById('userRoleChart');
+                        if (!ctx) return; // Don't render if canvas not found
+
+                        this.chartInstance = new Chart(ctx, {
+                            type: 'pie', // Or 'doughnut'
+                            data: {
+                                labels: this.chartData.labels,
+                                datasets: [{
+                                    label: 'User Roles',
+                                    data: this.chartData.data,
+                                    backgroundColor: [
+                                        'rgb(59, 130, 246)', // blue-500 for Seekers
+                                        'rgb(16, 185, 129)', // emerald-500 for Providers
+                                        // Add more colors if needed
+                                    ],
+                                    hoverOffset: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'top',
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                let label = context.label || '';
+                                                if (label) {
+                                                    label += ': ';
+                                                }
+                                                if (context.parsed !== null) {
+                                                    label += context.parsed;
+                                                }
+                                                return label;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }));
+
+                Alpine.data('orderStatusChartData', (chartData) => ({
+                    chartData: chartData,
+                    chartInstance: null,
+                    renderChart() {
+                        if (this.chartInstance) {
+                            this.chartInstance.destroy();
+                        }
+                        const ctx = document.getElementById('orderStatusChart');
+                        if (!ctx) return;
+
+                        this.chartInstance = new Chart(ctx, {
+                            type: 'bar', // Bar chart for status counts
+                            data: {
+                                labels: this.chartData.labels,
+                                datasets: [{
+                                    label: 'Order Count',
+                                    data: this.chartData.data,
+                                    backgroundColor: [ // Add more colors as needed
+                                        'rgba(255, 205, 86, 0.7)', // pending (yellow)
+                                        'rgba(54, 162, 235, 0.7)', // accepted (blue)
+                                        'rgba(153, 102, 255, 0.7)',// in_progress (purple)
+                                        'rgba(75, 192, 192, 0.7)', // completed (green)
+                                        'rgba(201, 203, 207, 0.7)',// cancelled (grey)
+                                        'rgba(255, 99, 132, 0.7)'  // rejected (red)
+                                    ],
+                                    borderColor: [
+                                        'rgb(255, 205, 86)',
+                                        'rgb(54, 162, 235)',
+                                        'rgb(153, 102, 255)',
+                                        'rgb(75, 192, 192)',
+                                        'rgb(201, 203, 207)',
+                                        'rgb(255, 99, 132)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                indexAxis: 'y', // Horizontal bar chart might be better if many statuses
+                                scales: {
+                                    x: { beginAtZero: true }
+                                },
+                                responsive: true,
+                                plugins: {
+                                    legend: { display: false }, // Hide legend for bar chart
+                                }
+                            }
+                        });
+                    }
+                }));
+            });
+        </script>
+
+        {{-- Leaflet JS --}}
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+                integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+                crossorigin=""></script>
+
+        {{-- Custom Map Script Placeholder --}}
+        @stack('map-scripts')
+
     </body>
 </html>

@@ -35,4 +35,17 @@ return [
         ],
     ],
 
+    'payfast' => [
+        'merchant_id' => env('PAYFAST_MERCHANT_ID'),
+        'merchant_key' => env('PAYFAST_MERCHANT_KEY'),
+        'passphrase' => env('PAYFAST_PASSPHRASE'),
+        'test_mode' => env('PAYFAST_TEST_MODE', true),
+    ],
+
+    'flutterwave' => [
+        'public_key' => env('FLUTTERWAVE_PUBLIC_KEY'),
+        'secret_key' => env('FLUTTERWAVE_SECRET_KEY'),
+        'secret_hash' => env('FLUTTERWAVE_SECRET_HASH'),
+    ],
+
 ];

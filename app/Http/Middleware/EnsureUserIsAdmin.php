@@ -16,10 +16,9 @@ class EnsureUserIsAdmin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check if user is authenticated and has the 'admin' role
-        if (!Auth::check() || Auth::user()->role !== 'admin') {
+        // Check if user is authenticated and has the 'admin' role via Spatie
+        if (!Auth::check() || !Auth::user()->hasRole('admin')) { // Use Spatie's hasRole()
             // Redirect non-admins or unauthenticated users
-            // You might want to redirect to a specific route or show a 403 error
             abort(403, 'Unauthorized action.');
         }
 

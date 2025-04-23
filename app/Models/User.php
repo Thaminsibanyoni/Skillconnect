@@ -4,19 +4,22 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany; // Added BelongsToMany
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Cashier\Billable; // Import Billable trait
+// use Laravel\Cashier\Billable; // Removed Billable trait import
 use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles; // Import HasRoles trait
 
 class User extends Authenticatable
 {
-    use Billable; // Add Billable trait
+    // use Billable; // Removed Billable trait
     use HasApiTokens;
+    use HasRoles; // Add HasRoles trait
 
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
@@ -36,6 +39,12 @@ class User extends Authenticatable
         'role', // Re-added role
         'status', // Added status
         'is_online', // Added online status
+        'bio', // Added bio
+        'latitude', // Added latitude
+        'longitude', // Added longitude
+        'subscription_plan', // Added subscription plan key
+        'subscription_status', // Added subscription status
+        'subscription_expires_at', // Added subscription expiry
     ];
 
     /**
@@ -69,7 +78,10 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_online' => 'boolean', // Added cast
+            'is_online' => 'boolean',
+            'latitude' => 'decimal:8',
+            'longitude' => 'decimal:8',
+            'subscription_expires_at' => 'datetime', // Added cast
         ];
     }
 
@@ -121,5 +133,23 @@ class User extends Authenticatable
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * The services that the user (provider) offers.
+     */
+    public function services(): BelongsToMany
+    {
+        // Assuming 'user_id' refers to the provider in the pivot table
+        return $this->belongsToMany(Service::class, 'service_user');
+        // If pivot table has extra columns like 'rate', add ->withPivot('rate');
+    }
+
+    /**
+     * The cities that the user (provider) serves.
+     */
+    public function cities(): BelongsToMany
+    {
+        return $this->belongsToMany(City::class, 'city_user');
     }
 }

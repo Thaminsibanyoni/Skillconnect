@@ -77,8 +77,10 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                {{-- Add View/Assign buttons later --}}
-                                <a href="#" class="text-indigo-600 hover:text-indigo-900">View</a>
+                                <a href="#" class="text-indigo-600 hover:text-indigo-900">View</a> {{-- TODO: Link to order details --}}
+                                @if($order->status === 'pending' && !$order->provider_id)
+                                    <button wire:click="showAssignModal({{ $order->id }})" class="text-blue-600 hover:text-blue-900">Assign</button>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -95,4 +97,42 @@
             {{ $orders->links() }}
         </div>
     </div>
+
+    {{-- Assign Provider Modal --}}
+    <x-dialog-modal wire:model.live="showAssignModal">
+        <x-slot name="title">
+            Assign Provider to Order #{{ $assigningOrderId }}
+        </x-slot>
+
+        <x-slot name="content">
+            @if($assigningOrder)
+                <p class="mb-2 text-sm">Service: <strong>{{ $assigningOrder->service?->name }}</strong></p>
+                <p class="mb-4 text-sm">Location: <strong>{{ $assigningOrder->city?->name ?? 'N/A' }}</strong> ({{ $assigningOrder->address }})</p>
+            @endif
+
+            <div class="mt-4">
+                <x-label for="selectedProviderId" value="{{ __('Select Available Provider') }}" />
+                <select id="selectedProviderId" wire:model="selectedProviderId" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                    <option value="">-- Select Provider --</option>
+                    @forelse($availableProviders as $provider)
+                        <option value="{{ $provider->id }}">{{ $provider->name }} (ID: {{ $provider->id }})</option>
+                    @empty
+                         <option value="" disabled>No suitable online providers found</option>
+                    @endforelse
+                </select>
+                <x-input-error for="selectedProviderId" class="mt-2" />
+            </div>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeAssignModal()" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ms-3" wire:click="assignProvider()" wire:loading.attr="disabled" wire:target="assignProvider">
+                {{ __('Assign Provider') }}
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
+
 </div>
